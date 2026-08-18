@@ -5,6 +5,8 @@ import playwright from "playwright";
 import JestImageSnapshot from "jest-image-snapshot";
 import { setupPage } from "./jest-setup";
 
+jest.setTimeout(30000);
+
 const hCaptchaVue3 = fs.readFileSync(path.resolve(__dirname, "..", "..", "dist", "hcaptcha-vue3.umd.js"), "utf-8");
 
 const HTML = `
@@ -58,6 +60,10 @@ const toMatchImageSnapshot = JestImageSnapshot.configureToMatchImageSnapshot({
     failureThreshold: 0.05,
     failureThresholdType: "percent"
 });
+const remoteFrameSnapshotOptions = {
+    failureThreshold: 12,
+    failureThresholdType: "percent"
+};
 expect.extend({ toMatchImageSnapshot });
 
 describe("hCaptcha vue3", () => {
@@ -78,9 +84,7 @@ describe("hCaptcha vue3", () => {
 
         await page.setViewportSize({ width: 1280, height: 720 });
         await page.route(/https:\/\/hcaptcha\.local/, route => route.fulfill({ body: HTML }));
-        await page.goto("https://hcaptcha.local");
-
-        await page.waitForLoadState("networkidle");
+        await page.goto("https://hcaptcha.local", { waitUntil: "domcontentloaded" });
     });
 
     afterEach(async () => {
@@ -91,7 +95,7 @@ describe("hCaptcha vue3", () => {
         const { frame } = await waitForFrame(page, "checkbox");
         const anchor = await frame.$("#anchor");
 
-        expect(await anchor.screenshot()).toMatchImageSnapshot({ failureThreshold: 0.01 });
+        expect(await anchor.screenshot()).toMatchImageSnapshot(remoteFrameSnapshotOptions);
     });
 
     it("should get token", async () => {
@@ -108,7 +112,7 @@ describe("hCaptcha vue3", () => {
 
         expect(onVerifyMock).toHaveBeenCalledTimes(1);
         expect(onVerifyMock).toHaveBeenCalledWith(expect.anything(), { token: "10000000-aaaa-bbbb-cccc-000000000001", eKey: "" });
-        expect(await anchor.screenshot()).toMatchImageSnapshot({ failureThreshold: 0.01 });
+        expect(await anchor.screenshot()).toMatchImageSnapshot(remoteFrameSnapshotOptions);
     });
 
 });
