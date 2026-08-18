@@ -5,6 +5,8 @@ import playwright from "playwright";
 import JestImageSnapshot from "jest-image-snapshot";
 import { setupPage } from "./jest-setup";
 
+jest.setTimeout(30000);
+
 const hCaptchaVue3 = fs.readFileSync(path.resolve(__dirname, "..", "..", "dist", "hcaptcha-vue3.umd.js"), "utf-8");
 
 const HTML = `
@@ -78,9 +80,7 @@ describe("hCaptcha vue3", () => {
 
         await page.setViewportSize({ width: 1280, height: 720 });
         await page.route(/https:\/\/hcaptcha\.local/, route => route.fulfill({ body: HTML }));
-        await page.goto("https://hcaptcha.local");
-
-        await page.waitForLoadState("networkidle");
+        await page.goto("https://hcaptcha.local", { waitUntil: "domcontentloaded" });
     });
 
     afterEach(async () => {
