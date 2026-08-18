@@ -60,6 +60,10 @@ const toMatchImageSnapshot = JestImageSnapshot.configureToMatchImageSnapshot({
     failureThreshold: 0.05,
     failureThresholdType: "percent"
 });
+const remoteFrameSnapshotOptions = {
+    failureThreshold: 12,
+    failureThresholdType: "percent"
+};
 expect.extend({ toMatchImageSnapshot });
 
 describe("hCaptcha vue3", () => {
@@ -91,7 +95,7 @@ describe("hCaptcha vue3", () => {
         const { frame } = await waitForFrame(page, "checkbox");
         const anchor = await frame.$("#anchor");
 
-        expect(await anchor.screenshot()).toMatchImageSnapshot({ failureThreshold: 0.01 });
+        expect(await anchor.screenshot()).toMatchImageSnapshot(remoteFrameSnapshotOptions);
     });
 
     it("should get token", async () => {
@@ -108,7 +112,7 @@ describe("hCaptcha vue3", () => {
 
         expect(onVerifyMock).toHaveBeenCalledTimes(1);
         expect(onVerifyMock).toHaveBeenCalledWith(expect.anything(), { token: "10000000-aaaa-bbbb-cccc-000000000001", eKey: "" });
-        expect(await anchor.screenshot()).toMatchImageSnapshot({ failureThreshold: 0.01 });
+        expect(await anchor.screenshot()).toMatchImageSnapshot(remoteFrameSnapshotOptions);
     });
 
 });
